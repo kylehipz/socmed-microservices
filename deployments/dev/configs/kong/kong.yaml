@@ -1,0 +1,11 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: users
+    url: http://users-service:8080/
+    routes:
+      - name: users-route
+        strip_path: true
+        paths:
+          - /api/v1/users
