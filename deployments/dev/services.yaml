@@ -14,7 +14,7 @@ services:
       timeout: 3s
       retries: 3
     environment:
-      DATABASE_URL: postgres://postgres:postgres@users-db/socmed_users
+      DATABASE_URL: postgres://postgres:postgres@users-db/socmed_users?sslmode=disable
     depends_on:
       users-db:
         condition: service_healthy

@@ -16,6 +16,7 @@ func NewEchoServer(db *gorm.DB) *echo.Echo {
 
 	userHandler := handlers.NewUserHandler(db)
 
+	e.GET("/", userHandler.ListUsers)
 	e.POST("/", userHandler.CreateUser)
 	e.GET("/healthz", userHandler.HealthCheck)
 
