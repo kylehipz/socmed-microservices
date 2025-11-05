@@ -1,0 +1,16 @@
+services:
+  users-migrate:
+      image: migrate/migrate:v4.19.0
+      container_name: users-migrate
+      depends_on:
+        users-db:
+          condition: service_healthy
+      volumes:
+        - ../../services/users/migrations:/migrations
+      command:
+        [
+          "-path", "/migrations",
+          "-database", "postgres://postgres:postgres@users-db:5432/socmed_users?sslmode=disable",
+          "up"
+        ]
+      restart: "on-failure"
