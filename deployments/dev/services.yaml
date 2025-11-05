@@ -1,0 +1,18 @@
+services:
+  users-service:
+    container_name: users-service
+    build:
+      context: ../../services/users
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ../../services/users:/app
+    ports:
+      - 8081:8080
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8080/healthz || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    depends_on:
+      users-db:
+        condition: service_healthy
