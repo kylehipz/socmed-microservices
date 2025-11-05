@@ -13,6 +13,8 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@users-db/socmed_users
     depends_on:
       users-db:
         condition: service_healthy

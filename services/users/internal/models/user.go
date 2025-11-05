@@ -4,19 +4,17 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 // User represents a row in the users.users table.
 type User struct {
-	ID        uuid.UUID      `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
-	FirstName string         `gorm:"type:text;not null"`
-	LastName  string         `gorm:"type:text;not null"`
-	Email     string         `gorm:"type:text;not null;uniqueIndex"`
-	Username  string         `gorm:"type:text;not null;uniqueIndex"`
-	CreatedAt time.Time      `gorm:"type:timestamptz;default:now()"`
-	UpdatedAt time.Time      `gorm:"type:timestamptz;default:now()"`
-	DeletedAt gorm.DeletedAt `gorm:"index"` // optional soft delete
+	ID        uuid.UUID      `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
+	FirstName string         `gorm:"type:text;not null" json:"firstName"`
+	LastName  string         `gorm:"type:text;not null" json:"lastName"`
+	Email     string         `gorm:"type:text;not null;uniqueIndex" json:"email"`
+	Username  string         `gorm:"type:text;not null;uniqueIndex" json:"userName"`
+	CreatedAt time.Time      `gorm:"type:timestamptz;default:now()" json:"createdAt"`
+	UpdatedAt time.Time      `gorm:"type:timestamptz;default:now()" json:"updatedAt"`
 }
 
 // TableName overrides the default pluralized name (users)

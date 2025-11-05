@@ -1,21 +1,21 @@
 package main
 
 import (
-	"net/http"
+	"log"
 
-	"github.com/labstack/echo/v4"
+	"github.com/kylehipz/socmed-microservices/users/config"
+	"github.com/kylehipz/socmed-microservices/users/internal/db"
+	"github.com/kylehipz/socmed-microservices/users/internal/server"
 )
 
 func main() {
-	e := echo.New()
+	dsn := config.Settings.DATABASE_URL
 
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "HELLO WORLD!!")
-	})
+	gormDB := db.NewGormDB(dsn)
 
-	e.GET("/healthz", func(c echo.Context) error {
-		return c.String(http.StatusOK, "ok")
-	})
+	e := server.NewEchoServer(gormDB)
 
-	e.Logger.Fatal(e.Start(":8080"))
+	if err := e.Start(":8080"); err != nil {
+		log.Fatal(err)
+	}
 }
