@@ -11,8 +11,12 @@ func (u *UserHandler) ListUsers(c echo.Context) error {
 	var users []models.User
 
 	if err := u.db.Find(&users).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, echo.Map{"message": "Internal server error"})
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Message: "Internal server error"})
 	}
 
 	return c.JSON(http.StatusOK, users)
+}
+
+type ErrorResponse struct {
+	Message string `json:"message"`
 }
