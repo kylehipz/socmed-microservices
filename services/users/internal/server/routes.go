@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/kylehipz/socmed-microservices/users/internal/middlewares"
 	"github.com/kylehipz/socmed-microservices/users/internal/server/handlers"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -15,11 +16,12 @@ func NewEchoServer(db *gorm.DB) *echo.Echo {
 	e.Use(middleware.Recover())
 
 	userHandler := handlers.NewUserHandler(db)
+	jwtMiddleware := middlewares.JWTAuth("")
 
-	e.GET("/", userHandler.ListUsers)
+	e.GET("/", jwtMiddleware(userHandler.ListUsers))
 	e.POST("/register", userHandler.RegisterUser)
 	e.POST("/login", userHandler.LoginUser)
-	e.GET("/:id", userHandler.GetUser)
+	e.GET("/me", jwtMiddleware(userHandler.GetUser))
 	e.GET("/healthz", userHandler.HealthCheck)
 
 	return e

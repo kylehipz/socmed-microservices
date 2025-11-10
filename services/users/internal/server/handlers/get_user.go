@@ -10,7 +10,7 @@ import (
 )
 
 func (u *UserHandler) GetUser(c echo.Context) error {
-	id := c.Param("id")
+	id := c.Get("user_id")
 	var user models.User
 
 	if err := u.db.First(&user, "id = ?", id).Error; err != nil {
