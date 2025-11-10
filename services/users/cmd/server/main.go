@@ -15,6 +15,7 @@ func main() {
 
 	e := server.NewEchoServer(gormDB)
 
+	log.Println("Starting users service...")
 	if err := e.Start(":8080"); err != nil {
 		log.Fatal(err)
 	}

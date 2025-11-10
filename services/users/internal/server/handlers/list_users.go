@@ -16,7 +16,3 @@ func (u *UserHandler) ListUsers(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, users)
 }
-
-type ErrorResponse struct {
-	Message string `json:"message"`
-}

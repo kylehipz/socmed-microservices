@@ -12,7 +12,8 @@ type User struct {
 	FirstName string         `gorm:"type:text;not null" json:"firstName"`
 	LastName  string         `gorm:"type:text;not null" json:"lastName"`
 	Email     string         `gorm:"type:text;not null;uniqueIndex" json:"email"`
-	Username  string         `gorm:"type:text;not null;uniqueIndex" json:"userName"`
+	UserName  string         `gorm:"type:text;not null;uniqueIndex" json:"userName"`
+	Password  string         `gorm:"type:text;not null" json:"password"`
 	CreatedAt time.Time      `gorm:"type:timestamptz;default:now()" json:"createdAt"`
 	UpdatedAt time.Time      `gorm:"type:timestamptz;default:now()" json:"updatedAt"`
 }
