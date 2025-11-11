@@ -20,6 +20,18 @@ services:
       follow-service:
         condition: service_healthy
 
+  rabbitmq:
+    image: rabbitmq:4.20-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"    # for apps (AMQP)
+      - "15672:15672"  # for management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
   users-db:
     image: postgres:15
     container_name: users-db
@@ -55,6 +67,8 @@ services:
       retries: 5
     volumes:
       - follow-db:/var/lib/postgresql/data
+
 volumes:
   users-db:
   follow-db:
+  rabbitmq_data:
