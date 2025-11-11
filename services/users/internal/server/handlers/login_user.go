@@ -11,8 +11,8 @@ import (
 )
 
 type LoginRequest struct {
-    Email    string `json:"email"`
-    Password string `json:"password"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func (u *UserHandler) LoginUser(c echo.Context) error {
@@ -33,16 +33,16 @@ func (u *UserHandler) LoginUser(c echo.Context) error {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.ID.String(),
+		"sub":   user.ID.String(),
 		"email": user.Email,
-		"exp": time.Now().Add(time.Hour*24).Unix(),
+		"exp":   time.Now().Add(time.Hour * 24).Unix(),
 	})
 
 	tokenString, _ := token.SignedString([]byte(u.jwtSecret))
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"access_token": tokenString,
-		"token_type": "Bearer",
-		"expires_in": 86400,
+		"token_type":   "Bearer",
+		"expires_in":   86400,
 	})
 }

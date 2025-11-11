@@ -15,6 +15,7 @@ services:
       retries: 3
     environment:
       DATABASE_URL: postgres://postgres:postgres@users-db/socmed_users?sslmode=disable
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672/
     depends_on:
       users-db:
         condition: service_healthy
@@ -37,6 +38,7 @@ services:
       retries: 3
     environment:
       DATABASE_URL: postgres://postgres:postgres@follow-db/socmed_follow?sslmode=disable
+      RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672/
     depends_on:
       follow-db:
         condition: service_healthy

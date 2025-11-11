@@ -21,7 +21,7 @@ services:
         condition: service_healthy
 
   rabbitmq:
-    image: rabbitmq:4.20-management
+    image: rabbitmq:4.2.0-management
     container_name: rabbitmq
     ports:
       - "5672:5672"    # for apps (AMQP)

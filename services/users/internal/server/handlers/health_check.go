@@ -7,5 +7,5 @@ import (
 )
 
 func (u *UserHandler) HealthCheck(c echo.Context) error {
-		return c.String(http.StatusOK, "ok")
+	return c.String(http.StatusOK, "ok")
 }
