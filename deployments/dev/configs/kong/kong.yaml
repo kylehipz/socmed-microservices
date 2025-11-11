@@ -9,3 +9,21 @@ services:
         strip_path: true
         paths:
           - /api/v1/users
+
+  - name: follow
+    url: http://follow-service:8080/
+    routes:
+      - name: follow-route
+        strip_path: true
+        paths:
+          - /api/v1/users/me/following
+
+      - name: follow-healthz-route
+        paths:
+          - /api/v1/follow/healthz
+        strip_path: false
+        plugins:
+          - name: request-transformer
+            config:
+              replace:
+                uri: /healthz

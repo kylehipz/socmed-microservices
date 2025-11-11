@@ -14,3 +14,19 @@ services:
           "up"
         ]
       restart: "on-failure"
+
+  follow-migrate:
+      image: migrate/migrate:v4.19.0
+      container_name: follow-migrate
+      depends_on:
+        users-db:
+          condition: service_healthy
+      volumes:
+        - ../../services/follow/migrations:/migrations
+      command:
+        [
+          "-path", "/migrations",
+          "-database", "postgres://postgres:postgres@follow-db:5432/socmed_follow?sslmode=disable",
+          "up"
+        ]
+      restart: "on-failure"
