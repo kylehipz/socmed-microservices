@@ -1,14 +1,14 @@
 package db
 
 import (
-	"log"
 	"time"
 
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func NewGormDB(dsn string) (*gorm.DB, error) {
+func NewGormDB(log *zap.Logger, dsn string) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
@@ -32,7 +32,7 @@ func NewGormDB(dsn string) (*gorm.DB, error) {
 	sqlDB.SetMaxOpenConns(100)          // Set max open connections
 	sqlDB.SetConnMaxLifetime(time.Hour) // Set max connection lifetime
 
-	log.Println("Database connection established successfully.")
+	log.Info("Database connection established successfully.")
 	return db, nil
 }
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -12,10 +11,12 @@ import (
 	"github.com/kylehipz/socmed-microservices/common/pkg/events"
 	"github.com/labstack/echo/v4"
 	"github.com/rabbitmq/amqp091-go"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type ApiServer struct {
+	log *zap.Logger
 	e *echo.Echo
 	name string
 	consumers []events.Consumer
@@ -26,6 +27,7 @@ type ApiServer struct {
 }
 
 func NewApiServer(
+	log *zap.Logger,
 	e *echo.Echo,
 	name string,
 	consumers []events.Consumer,
@@ -33,7 +35,10 @@ func NewApiServer(
 	mq *amqp091.Connection,
 ) *ApiServer {
 	e.HideBanner = true
+	e.HidePort = true
+
 	return &ApiServer{
+		log: log,
 		e: e,
 		name: name,
 		consumers: consumers,
@@ -57,7 +62,7 @@ func (a *ApiServer) Start(ctx context.Context, port string) error {
 }
 
 func (a *ApiServer) Stop(ctx context.Context) {
-	log.Println("App shutting down...")
+	a.log.Info("App shutting down...")
 
 	if a.consumerCancel != nil {
 		a.consumerCancel()
@@ -68,11 +73,16 @@ func (a *ApiServer) Stop(ctx context.Context) {
 
 	// close all connections
 	a.closeConnections()
-	log.Println("Application shutdown complete")
+	a.log.Info("Application shutdown complete")
 }
 
 func (a *ApiServer) startHttpServer(port string) error {
+	a.e.HideBanner = true
+	a.e.HidePort = true
+
 	portStr := fmt.Sprintf(":%s", port)
+
+	a.log.Info(fmt.Sprintf("%s started on port %s", a.name, port))
 	if err := a.e.Start(portStr); err != nil && !errors.Is(err ,http.ErrServerClosed) {
 		return err
 	}
@@ -85,9 +95,9 @@ func (a *ApiServer) stopHttpServer(ctx context.Context) {
 	defer cancel()
 
 	if err := a.e.Shutdown(shutdownCtx); err != nil {
-		log.Printf("HTTP server shutdown error: %v", err)
+		a.log.Error("HTTP server shutdown error", zap.Error(err))
 	} else {
-		log.Println("HTTP server shut down gracefully")
+		a.log.Info("HTTP server shut down gracefully")
 	}
 
 	waitChan := make(chan struct{})
@@ -99,9 +109,9 @@ func (a *ApiServer) stopHttpServer(ctx context.Context) {
 
 	select {
 	case <-waitChan:
-		log.Println("All consumers stopped gracefully")
+		a.log.Info("All consumers stopped gracefully")
 	case <-ctx.Done():
-	log.Println("Consumers timed out, proceeding with shutdown")
+		a.log.Info("Consumers timed out, proceeding with shutdown")
 	}
 }
 
@@ -110,17 +120,17 @@ func (a *ApiServer) closeConnections() {
 		sqlDb, _ := a.db.DB()
 		err := sqlDb.Close()
 		if err != nil {
-			log.Printf("Cannot close database connection %v", err)
+			a.log.Error("Cannot close database connection", zap.Error(err))
 		} else {
-			log.Println("Database connection closed")
+			a.log.Info("Database connection closed")
 		}
 	}
 
 	if a.mq != nil {
 		if err := a.mq.Close(); err != nil {
-			log.Printf("Cannot close rabbitmq connection %v", err)
+			a.log.Error("Cannot close rabbitmq connection", zap.Error(err))
 		} else {
-			log.Println("RabbitMQ connection closed.")
+			a.log.Info("RabbitMQ connection closed.")
 		}
 	}
 }

@@ -1,9 +1,12 @@
 package errors
 
-import "log"
+import (
+	"go.uber.org/zap"
+)
 
-func HandleFatalError(err error) {
+func HandleFatalError(log *zap.Logger, err error) {
+	
 	if err != nil {
-		log.Fatalf("Error %v", err)
+		log.Error("Error", zap.Error(err))
 	}
 }
