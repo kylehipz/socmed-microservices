@@ -28,7 +28,7 @@ func NewPublisher(ch *amqp091.Channel, exchangeName string) *Publisher {
 	return &Publisher{ch: ch, exchangeName: exchangeName}
 }
 
-func (p *Publisher) PublishUserEvent(eventType string, payload any) error {
+func (p *Publisher) PublishEvent(eventType string, payload any) error {
 	body, err := json.Marshal(payload)
 
 	if err != nil {

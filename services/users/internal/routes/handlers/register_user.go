@@ -3,22 +3,15 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/kylehipz/socmed-microservices/users/config"
+	"github.com/kylehipz/socmed-microservices/common/pkg/events"
 	"github.com/kylehipz/socmed-microservices/users/internal/models"
+	"github.com/kylehipz/socmed-microservices/users/internal/types"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type RegisterUserRequest struct {
-	FirstName string `json:"firstName" validate:"required"`
-	LastName  string `json:"lastName" validate:"required"`
-	Email     string `json:"email" validate:"required,email"`
-	UserName  string `json:"userName" validate:"required"`
-	Password  string `json:"password" validate:"required,min=8"`
-}
-
 func (u *UserHandler) RegisterUser(c echo.Context) error {
-	var req RegisterUserRequest
+	var req types.RegisterUserRequest
 
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorResponse{Message: "Invalid payload"})
@@ -40,7 +33,7 @@ func (u *UserHandler) RegisterUser(c echo.Context) error {
 
 	user.StripPassword()
 
-	if err := u.eventPublisher.PublishUserEvent(config.Settings.UserCreatedEvent, user); err != nil {
+	if err := u.publisher.PublishEvent(events.UserCreated, user); err != nil {
 		// TODO: Handle error
 	}
 

@@ -42,7 +42,7 @@ func NewApiServer(
 	}
 }
 
-func (a *ApiServer) Start(ctx context.Context, port int) error {
+func (a *ApiServer) Start(ctx context.Context, port string) error {
 	// Consumer context
 	consumerCtx, cancel := context.WithCancel(ctx)
 	a.consumerCancel = cancel
@@ -71,8 +71,8 @@ func (a *ApiServer) Stop(ctx context.Context) {
 	log.Println("Application shutdown complete")
 }
 
-func (a *ApiServer) startHttpServer(port int) error {
-	portStr := fmt.Sprintf(":%d", port)
+func (a *ApiServer) startHttpServer(port string) error {
+	portStr := fmt.Sprintf(":%s", port)
 	if err := a.e.Start(portStr); err != nil && !errors.Is(err ,http.ErrServerClosed) {
 		return err
 	}

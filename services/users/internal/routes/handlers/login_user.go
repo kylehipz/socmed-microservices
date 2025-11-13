@@ -6,17 +6,13 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/kylehipz/socmed-microservices/users/internal/models"
+	"github.com/kylehipz/socmed-microservices/users/internal/types"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 func (u *UserHandler) LoginUser(c echo.Context) error {
-	var req LoginRequest
+	var req types.LoginRequest
 
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, ErrorResponse{Message: "Invalid payload"})
