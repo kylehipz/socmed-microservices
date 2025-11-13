@@ -20,4 +20,8 @@ func NewSettings() *Config {
 	}
 }
 
+var RabbitMqUrl = os.Getenv("RABBITMQ_URL")
+var DatabaseUrl = os.Getenv("DATABASE_URL")
+var ServiceName = "Users Service"
+
 var Settings = NewSettings()

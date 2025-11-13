@@ -4,9 +4,19 @@ WORKDIR /app
 
 RUN go install github.com/air-verse/air@latest
 
-COPY go.* .
-RUN go mod download
+# Copy workspace definition
+COPY go.work go.work.sum ./
 
-COPY . .
+# Copy all modules used in the workspace
+COPY common/go.mod common/go.sum ./common/
+COPY follow/go.mod follow/go.sum ./follow/
+
+# Pre-download all dependencies
+RUN go work sync && go mod download
+
+COPY common/ ./common
+COPY follow/ ./follow
+
+WORKDIR /app/follow
 
 CMD ["air"]

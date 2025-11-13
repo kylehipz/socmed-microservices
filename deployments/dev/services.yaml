@@ -2,10 +2,13 @@ services:
   users-service:
     container_name: users-service
     build:
-      context: ../../services/users
+      context: ../../services
       dockerfile: Dockerfile.dev
+      args:
+        SERVICE: users
     volumes:
-      - ../../services/users:/app
+      - ../../services/users:/app/users
+      - ../../services/common:/app/common
     ports:
       - 8081:8080
     healthcheck:
@@ -25,10 +28,13 @@ services:
   follow-service:
     container_name: follow-service
     build:
-      context: ../../services/follow
+      context: ../../services
       dockerfile: Dockerfile.dev
+      args:
+        SERVICE: follow
     volumes:
-      - ../../services/follow:/app
+      - ../../services/follow:/app/follow
+      - ../../services/common:/app/common
     ports:
       - 8082:8080
     healthcheck:
