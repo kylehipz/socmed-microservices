@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/kylehipz/socmed-microservices/users/config"
 	"github.com/kylehipz/socmed-microservices/users/internal/models"
 	"github.com/kylehipz/socmed-microservices/users/internal/types"
 	"github.com/labstack/echo/v4"
@@ -34,7 +35,7 @@ func (u *UserHandler) LoginUser(c echo.Context) error {
 		"exp":   time.Now().Add(time.Hour * 24).Unix(),
 	})
 
-	tokenString, _ := token.SignedString([]byte(u.jwtSecret))
+	tokenString, _ := token.SignedString([]byte(config.JwtSecret))
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"access_token": tokenString,

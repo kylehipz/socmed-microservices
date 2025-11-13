@@ -17,8 +17,8 @@ services:
     depends_on:
       users-service:
         condition: service_healthy
-      follow-service:
-        condition: service_healthy
+      # follow-service:
+      #   condition: service_healthy
 
   rabbitmq:
     image: rabbitmq:4.2.0-management
