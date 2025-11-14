@@ -2,12 +2,12 @@ package events
 
 import (
 	"encoding/json"
-	"log"
 	"github.com/rabbitmq/amqp091-go"
+	"log"
 )
 
 type Publisher struct {
-	ch *amqp091.Channel
+	ch           *amqp091.Channel
 	exchangeName string
 }
 

@@ -20,7 +20,7 @@ import (
 
 func main() {
 	// init logger
-	log, _ := logger.NewLogger(config.Environment, config.LogLevel)
+	log := logger.NewLogger(config.Environment, config.LogLevel)
 
 	mainCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()

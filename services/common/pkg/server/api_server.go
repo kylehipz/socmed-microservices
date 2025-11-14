@@ -16,13 +16,13 @@ import (
 )
 
 type ApiServer struct {
-	log *zap.Logger
-	e *echo.Echo
-	name string
-	consumers []events.Consumer
-	db *gorm.DB
-	mq *amqp091.Connection
-	wg sync.WaitGroup
+	log            *zap.Logger
+	e              *echo.Echo
+	name           string
+	consumers      []events.Consumer
+	db             *gorm.DB
+	mq             *amqp091.Connection
+	wg             sync.WaitGroup
 	consumerCancel context.CancelFunc
 }
 
@@ -38,12 +38,12 @@ func NewApiServer(
 	e.HidePort = true
 
 	return &ApiServer{
-		log: log,
-		e: e,
-		name: name,
+		log:       log,
+		e:         e,
+		name:      name,
 		consumers: consumers,
-		db: db,
-		mq: mq,
+		db:        db,
+		mq:        mq,
 	}
 }
 
@@ -83,7 +83,7 @@ func (a *ApiServer) startHttpServer(port string) error {
 	portStr := fmt.Sprintf(":%s", port)
 
 	a.log.Info(fmt.Sprintf("%s started on port %s", a.name, port))
-	if err := a.e.Start(portStr); err != nil && !errors.Is(err ,http.ErrServerClosed) {
+	if err := a.e.Start(portStr); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 
@@ -101,7 +101,7 @@ func (a *ApiServer) stopHttpServer(ctx context.Context) {
 	}
 
 	waitChan := make(chan struct{})
-	go func () {
+	go func() {
 		defer close(waitChan)
 		// wait all consumers to be done
 		a.wg.Wait()

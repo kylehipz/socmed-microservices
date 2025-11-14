@@ -19,4 +19,3 @@ var ServiceName = "Users Service"
 
 // Events
 var SocmedExchangeName = "socmed.events"
-

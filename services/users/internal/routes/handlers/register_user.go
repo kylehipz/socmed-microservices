@@ -34,7 +34,10 @@ func (u *UserHandler) RegisterUser(c echo.Context) error {
 	}
 
 	if err := u.db.Create(&user).Error; err != nil {
-		return c.JSON(http.StatusConflict, ErrorResponse{Message: "User already exists"})
+		errorMessage := "User already exists"
+		log.Error(errorMessage, zap.Error(err))
+
+		return c.JSON(http.StatusConflict, ErrorResponse{Message: errorMessage})
 	}
 
 	user.StripPassword()

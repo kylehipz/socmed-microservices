@@ -45,4 +45,3 @@ func JWTAuth(secret string) echo.MiddlewareFunc {
 		}
 	}
 }
-

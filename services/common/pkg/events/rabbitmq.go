@@ -15,4 +15,3 @@ func NewRabbitMQConn(log *zap.Logger, connStr string) (*amqp091.Connection, erro
 	}
 
 }
-

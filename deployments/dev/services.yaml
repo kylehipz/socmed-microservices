@@ -3,7 +3,7 @@ services:
     container_name: users-service
     build:
       context: ../../services
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       args:
         SERVICE: users
     volumes:
@@ -21,7 +21,7 @@ services:
       RABBITMQ_URL: amqp://admin:admin@rabbitmq:5672/
       JWT_SECRET: secret
       HTTP_PORT: 8080
-      ENVIRONMENT: dev
+      ENVIRONMENT: prod
       LOG_LEVEL: debug
     depends_on:
       users-db:

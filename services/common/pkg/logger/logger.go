@@ -10,9 +10,10 @@ import (
 )
 
 type contextKey string
+
 const loggerKey = contextKey("logger")
 
-func NewLogger(env string, logLevel string) (*zap.Logger, error) {
+func NewLogger(env string, logLevel string) *zap.Logger {
 	var cfg zap.Config
 
 	// Pick base config (dev has pretty console logs, prod has JSON logs)
@@ -27,9 +28,14 @@ func NewLogger(env string, logLevel string) (*zap.Logger, error) {
 	cfg.Level = zap.NewAtomicLevelAt(level)
 
 	cfg.DisableCaller = false
-	cfg.DisableStacktrace = true
+	cfg.DisableStacktrace = false
 
-	return cfg.Build()
+	cfg.EncoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
+	cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+
+	logger, _ := cfg.Build()
+
+	return logger
 }
 
 func resolveLogLevel(env string, override string) zapcore.Level {

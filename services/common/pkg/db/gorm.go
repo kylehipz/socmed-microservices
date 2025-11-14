@@ -6,10 +6,15 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"moul.io/zapgorm2"
 )
 
 func NewGormDB(log *zap.Logger, dsn string) (*gorm.DB, error) {
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	gormLogger := zapgorm2.New(zap.L())
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: gormLogger,
+	})
 
 	if err != nil {
 		return nil, err
@@ -35,4 +40,3 @@ func NewGormDB(log *zap.Logger, dsn string) (*gorm.DB, error) {
 	log.Info("Database connection established successfully.")
 	return db, nil
 }
-

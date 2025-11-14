@@ -38,7 +38,7 @@ func RequestLoggerMiddleware(baseLogger *zap.Logger) echo.MiddlewareFunc {
 			c.SetRequest(req.WithContext(ctx))
 
 			// Execute handler
-			err := next(c)
+			next(c)
 
 			// After handling
 			latency := time.Since(start)
@@ -52,13 +52,7 @@ func RequestLoggerMiddleware(baseLogger *zap.Logger) echo.MiddlewareFunc {
 				zap.Int64("response_size", size),
 			}
 
-			if err != nil {
-				// Let Echo handle transforming error → HTTP response
-				c.Error(err)
-				reqLogger.Error("request completed with error", append(fields, zap.Error(err))...)
-			} else {
-				reqLogger.Info("request completed", fields...)
-			}
+			reqLogger.Info("request completed", fields...)
 
 			return nil
 		}

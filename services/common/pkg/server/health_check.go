@@ -9,4 +9,3 @@ import (
 func HealthCheck(c echo.Context) error {
 	return c.String(http.StatusOK, "ok")
 }
-
