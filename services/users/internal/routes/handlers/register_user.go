@@ -18,12 +18,10 @@ func (u *UserHandler) RegisterUser(c echo.Context) error {
 	var req types.RegisterUserRequest
 
 	if err := c.Bind(&req); err != nil {
-		log.Error("Invalid payload")
 		return c.JSON(http.StatusBadRequest, ErrorResponse{Message: "Invalid payload"})
 	}
 
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	log.Debug("Password hashed")
 
 	user := models.User{
 		Email:     req.Email,
@@ -36,7 +34,6 @@ func (u *UserHandler) RegisterUser(c echo.Context) error {
 	if err := u.db.Create(&user).Error; err != nil {
 		errorMessage := "User already exists"
 		log.Error(errorMessage, zap.Error(err))
-
 		return c.JSON(http.StatusConflict, ErrorResponse{Message: errorMessage})
 	}
 
