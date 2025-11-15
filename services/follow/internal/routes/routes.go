@@ -3,13 +3,12 @@ package routes
 import (
 	"github.com/kylehipz/socmed-microservices/common/pkg/events"
 	"github.com/kylehipz/socmed-microservices/common/pkg/middlewares"
-	"github.com/kylehipz/socmed-microservices/follow/internal/routes/handlers"
 	"github.com/kylehipz/socmed-microservices/follow/config"
+	"github.com/kylehipz/socmed-microservices/follow/internal/routes/handlers"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
-
 
 func NewEchoServer(log *zap.Logger, db *gorm.DB, publisher *events.Publisher) *echo.Echo {
 	e := echo.New()

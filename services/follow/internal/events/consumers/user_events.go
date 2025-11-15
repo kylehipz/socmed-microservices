@@ -14,14 +14,14 @@ import (
 )
 
 type UserEventsConsumer struct {
-	log *zap.Logger
+	log               *zap.Logger
 	userEventsHandler *handlers.UserEventsHandler
-	ch *amqp091.Channel
-	workerCount int
-	wg sync.WaitGroup
+	ch                *amqp091.Channel
+	workerCount       int
+	wg                sync.WaitGroup
 }
 
-func NewUserEventsConsumer (
+func NewUserEventsConsumer(
 	log *zap.Logger,
 	ch *amqp091.Channel,
 	db *gorm.DB,
@@ -31,10 +31,10 @@ func NewUserEventsConsumer (
 	userEventsHandler := handlers.NewUserEventsHandler(consumerLog, db)
 
 	return &UserEventsConsumer{
-		log: consumerLog,
-		ch: ch,
+		log:               consumerLog,
+		ch:                ch,
 		userEventsHandler: userEventsHandler,
-		workerCount: workerCount,
+		workerCount:       workerCount,
 	}
 }
 
@@ -107,7 +107,7 @@ func (u *UserEventsConsumer) Start(ctx context.Context) error {
 	// Bind queue to exchange with pattern
 	if err = u.ch.QueueBind(
 		q.Name,
-		events.AllUserEvents,       // captures user.created and user.updated
+		events.AllUserEvents, // captures user.created and user.updated
 		constants.SocmedExchangeName,
 		false,
 		nil,
@@ -134,7 +134,7 @@ func (u *UserEventsConsumer) Start(ctx context.Context) error {
 
 			for {
 				select {
-				case <- ctx.Done():
+				case <-ctx.Done():
 					workerLog.Info("Application shutdown signal received. Worker shutting down...")
 					return
 				case msg, ok := <-msgs:
@@ -155,7 +155,6 @@ func (u *UserEventsConsumer) Start(ctx context.Context) error {
 			}
 		}(workerID)
 	}
-
 
 	u.log.Info("All workers started")
 	return nil

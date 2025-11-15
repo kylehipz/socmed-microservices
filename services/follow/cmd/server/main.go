@@ -41,7 +41,7 @@ func main() {
 	// init db
 	gormDB, err := db.NewGormDB(log, config.DatabaseUrl)
 	err_utils.HandleFatalError(log, err)
-	
+
 	// init consumers
 	userEventsConsumer := consumers.NewUserEventsConsumer(log, ch, gormDB, 10)
 	consumers := []events.Consumer{userEventsConsumer}

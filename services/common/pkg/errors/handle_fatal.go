@@ -6,6 +6,6 @@ import (
 
 func HandleFatalError(log *zap.Logger, err error) {
 	if err != nil {
-		log.Error("Error", zap.Error(err))
+		log.Fatal("Fatal error", zap.Error(err))
 	}
 }

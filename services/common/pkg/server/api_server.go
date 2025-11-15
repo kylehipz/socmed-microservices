@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	err_utils "github.com/kylehipz/socmed-microservices/common/pkg/errors"
 	"github.com/kylehipz/socmed-microservices/common/pkg/events"
 	"github.com/labstack/echo/v4"
 	"github.com/rabbitmq/amqp091-go"
@@ -141,7 +142,7 @@ func (a *ApiServer) startConsumers(ctx context.Context) {
 		go func(consumer events.Consumer) {
 			defer a.wg.Done()
 			if err := consumer.Start(ctx); err != nil {
-				a.consumerCancel()
+				err_utils.HandleFatalError(a.log, err)
 			}
 		}(c)
 	}

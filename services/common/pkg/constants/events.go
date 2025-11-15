@@ -6,4 +6,3 @@ var DeadLetterExchangeName = "socmed.events.dlx"
 
 // Queue
 var DeadLetterQueueName = "socmed.events.dlq"
-
