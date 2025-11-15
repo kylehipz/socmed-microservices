@@ -22,7 +22,6 @@ func main() {
 
 	mainCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
-
 	// init rabbitmq
 	rabbitMqConn, err := events.NewRabbitMQConn(log, config.RabbitMqUrl)
 	err_utils.HandleFatalError(log, err)

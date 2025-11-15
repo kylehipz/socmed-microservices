@@ -159,3 +159,7 @@ func (u *UserEventsConsumer) Start(ctx context.Context) error {
 	u.log.Info("All workers started")
 	return nil
 }
+
+func (u *UserEventsConsumer) Stop() { 
+	u.wg.Wait()
+}

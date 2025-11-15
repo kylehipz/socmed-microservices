@@ -4,4 +4,5 @@ import "context"
 
 type Consumer interface {
 	Start(context.Context) error
+	Stop()
 }

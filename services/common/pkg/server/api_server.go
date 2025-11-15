@@ -49,7 +49,6 @@ func NewApiServer(
 
 func (a *ApiServer) Start(ctx context.Context, appCancel context.CancelFunc, port string) {
 	a.appCancel = appCancel
-
 	// Start consumers
 	a.startConsumers(ctx)
 
@@ -59,6 +58,7 @@ func (a *ApiServer) Start(ctx context.Context, appCancel context.CancelFunc, por
 
 func (a *ApiServer) Stop(ctx context.Context) {
 	a.log.Info("App shutting down...")
+	a.stopConsumers()
 
 	// drain http requests
 	a.stopHttpServer(ctx)
@@ -136,5 +136,11 @@ func (a *ApiServer) startConsumers(ctx context.Context) {
 				a.appCancel()
 			}
 		}(c)
+	}
+}
+
+func (a *ApiServer) stopConsumers() {
+	for _, consumer := range a.consumers {
+		consumer.Stop()
 	}
 }
