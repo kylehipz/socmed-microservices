@@ -3,7 +3,7 @@ services:
     container_name: users-service
     build:
       context: ../../services
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
       args:
         SERVICE: users
     volumes:
@@ -28,7 +28,7 @@ services:
     container_name: follow-service
     build:
       context: ../../services
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
       args:
         SERVICE: follow
     volumes:

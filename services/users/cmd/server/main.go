@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
-	"net/http"
 	"os/signal"
 	"syscall"
 	"time"
@@ -16,7 +14,6 @@ import (
 	"github.com/kylehipz/socmed-microservices/common/pkg/server"
 	"github.com/kylehipz/socmed-microservices/users/config"
 	"github.com/kylehipz/socmed-microservices/users/internal/routes"
-	"go.uber.org/zap"
 )
 
 func main() {
@@ -32,8 +29,6 @@ func main() {
 
 	ch, err := rabbitMqConn.Channel()
 	err_utils.HandleFatalError(log, err)
-
-	defer ch.Close()
 
 	publisher := events.NewPublisher(ch, constants.SocmedExchangeName)
 
@@ -52,11 +47,7 @@ func main() {
 		rabbitMqConn,
 	)
 
-	go func() {
-		if err := apiServer.Start(mainCtx, config.HttpPort); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Error("API server error", zap.Error(err))
-		}
-	}()
+	go apiServer.Start(mainCtx, stop, config.HttpPort)
 
 	// Wait for shutdown signal
 	<-mainCtx.Done()

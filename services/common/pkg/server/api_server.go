@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	err_utils "github.com/kylehipz/socmed-microservices/common/pkg/errors"
 	"github.com/kylehipz/socmed-microservices/common/pkg/events"
 	"github.com/labstack/echo/v4"
 	"github.com/rabbitmq/amqp091-go"
@@ -24,7 +23,7 @@ type ApiServer struct {
 	db             *gorm.DB
 	mq             *amqp091.Connection
 	wg             sync.WaitGroup
-	consumerCancel context.CancelFunc
+	appCancel context.CancelFunc
 }
 
 func NewApiServer(
@@ -48,26 +47,18 @@ func NewApiServer(
 	}
 }
 
-func (a *ApiServer) Start(ctx context.Context, port string) error {
-	// Consumer context
-	consumerCtx, cancel := context.WithCancel(ctx)
-	a.consumerCancel = cancel
+func (a *ApiServer) Start(ctx context.Context, appCancel context.CancelFunc, port string) {
+	a.appCancel = appCancel
 
 	// Start consumers
-	a.startConsumers(consumerCtx)
+	a.startConsumers(ctx)
 
 	// Start API Server
-	a.startHttpServer(port)
-
-	return nil
+  a.startHttpServer(port)
 }
 
 func (a *ApiServer) Stop(ctx context.Context) {
 	a.log.Info("App shutting down...")
-
-	if a.consumerCancel != nil {
-		a.consumerCancel()
-	}
 
 	// drain http requests
 	a.stopHttpServer(ctx)
@@ -85,7 +76,7 @@ func (a *ApiServer) startHttpServer(port string) error {
 
 	a.log.Info(fmt.Sprintf("%s started on port %s", a.name, port))
 	if err := a.e.Start(portStr); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return err
+		a.appCancel()
 	}
 
 	return nil
@@ -142,7 +133,7 @@ func (a *ApiServer) startConsumers(ctx context.Context) {
 		go func(consumer events.Consumer) {
 			defer a.wg.Done()
 			if err := consumer.Start(ctx); err != nil {
-				err_utils.HandleFatalError(a.log, err)
+				a.appCancel()
 			}
 		}(c)
 	}

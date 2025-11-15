@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
-	"net/http"
 	"os/signal"
 	"syscall"
 	"time"
@@ -17,7 +15,6 @@ import (
 	"github.com/kylehipz/socmed-microservices/follow/config"
 	"github.com/kylehipz/socmed-microservices/follow/internal/events/consumers"
 	"github.com/kylehipz/socmed-microservices/follow/internal/routes"
-	"go.uber.org/zap"
 )
 
 func main() {
@@ -57,11 +54,7 @@ func main() {
 		rabbitMqConn,
 	)
 
-	go func() {
-		if err := apiServer.Start(mainCtx, config.HttpPort); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Error("API server error", zap.Error(err))
-		}
-	}()
+	go apiServer.Start(mainCtx, stop, config.HttpPort)
 
 	// Wait for shutdown signal
 	<-mainCtx.Done()
