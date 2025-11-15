@@ -2,30 +2,20 @@ package config
 
 import "os"
 
-type Config struct {
-	DatabaseUrl        string
-	RabbitMqUrl        string
-	SocmedExchangeName string
-	DeadLetterExchangeName string
-	UserCreatedEvent   string
-	UserUpdatedEvent   string
-	AllUserEvents   string
-	UserEventsQueue string
-		DeadLetterQueue string
-}
+// Connections
+var RabbitMqUrl = os.Getenv("RABBITMQ_URL")
+var DatabaseUrl = os.Getenv("DATABASE_URL")
 
-func NewSettings() *Config {
-	return &Config{
-		DatabaseUrl:        os.Getenv("DATABASE_URL"),
-		RabbitMqUrl:        os.Getenv("RABBITMQ_URL"),
-		SocmedExchangeName: "socmed.events",
-		DeadLetterExchangeName: "socmed.events.dlx",
-		UserCreatedEvent:   "user.created",
-		UserUpdatedEvent:   "user.updated",
-		AllUserEvents: "user.*",
-		UserEventsQueue:   "follow.user.queue",
-		DeadLetterQueue: "socmed.events.dlq",
-	}
-}
+// HTTP
+var HttpPort = os.Getenv("HTTP_PORT")
+var JwtSecret = os.Getenv("JWT_SECRET")
 
-var Settings = NewSettings()
+// Env
+var Environment = os.Getenv("ENVIRONMENT")
+var LogLevel = os.Getenv("LOG_LEVEL")
+
+// Service
+var ServiceName = "Follow Service"
+
+// Queue
+var UserEventsQueue = "follow.users.events"

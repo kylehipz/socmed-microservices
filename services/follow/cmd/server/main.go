@@ -1,36 +1,79 @@
 package main
 
 import (
-	"log"
+	"context"
+	"errors"
+	"net/http"
+	"os/signal"
+	"syscall"
+	"time"
 
+	"github.com/kylehipz/socmed-microservices/common/pkg/constants"
+	"github.com/kylehipz/socmed-microservices/common/pkg/db"
+	err_utils "github.com/kylehipz/socmed-microservices/common/pkg/errors"
+	"github.com/kylehipz/socmed-microservices/common/pkg/events"
+	"github.com/kylehipz/socmed-microservices/common/pkg/logger"
+	"github.com/kylehipz/socmed-microservices/common/pkg/server"
 	"github.com/kylehipz/socmed-microservices/follow/config"
-	"github.com/kylehipz/socmed-microservices/follow/internal/db"
-	"github.com/kylehipz/socmed-microservices/follow/internal/events"
-	"github.com/kylehipz/socmed-microservices/follow/internal/queue"
-	"github.com/kylehipz/socmed-microservices/follow/internal/server"
+	"github.com/kylehipz/socmed-microservices/follow/internal/events/consumers"
+	"github.com/kylehipz/socmed-microservices/follow/internal/routes"
+	"go.uber.org/zap"
 )
 
 func main() {
-	// init queue
-	rabbitMqConn := queue.NewRabbitMQConnection(config.Settings.RabbitMqUrl)
-	defer rabbitMqConn.Close()
-	ch, err := rabbitMqConn.Channel()
+	// init logger
+	log := logger.NewLogger(config.Environment, config.LogLevel)
 
-	if err != nil {
-		log.Fatalf("Failed to create rabbitmq channel: %v", err)
-	}
+	mainCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	// init rabbitmq
+	rabbitMqConn, err := events.NewRabbitMQConn(log, config.RabbitMqUrl)
+	err_utils.HandleFatalError(log, err)
+
+	ch, err := rabbitMqConn.Channel()
+	err_utils.HandleFatalError(log, err)
+
+	defer ch.Close()
+
+	publisher := events.NewPublisher(ch, constants.SocmedExchangeName)
 
 	// init db
-	gormDB := db.NewGormDB(config.Settings.DatabaseUrl)
+	gormDB, err := db.NewGormDB(log, config.DatabaseUrl)
+	err_utils.HandleFatalError(log, err)
+	
+	// init consumers
+	userEventsConsumer := consumers.NewUserEventsConsumer(log, ch, gormDB, 10)
+	consumers := []events.Consumer{userEventsConsumer}
 
-	// init echo server
-	e := server.NewEchoServer(gormDB)
+	// init echo and API Server
+	e := routes.NewEchoServer(log, gormDB, publisher)
+	apiServer := server.NewApiServer(
+		log,
+		e,
+		config.ServiceName,
+		consumers,
+		gormDB,
+		rabbitMqConn,
+	)
 
-	// start consumer
-	go events.StartUserSyncConsumer(gormDB, ch)
+	go func() {
+		if err := apiServer.Start(mainCtx, config.HttpPort); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Error("API server error", zap.Error(err))
+		}
+	}()
 
-	log.Println("Starting follow service...")
-	if err := e.Start(":8080"); err != nil {
-		log.Fatal(err)
-	}
+	// Wait for shutdown signal
+	<-mainCtx.Done()
+
+	// Call stop to remove the signal handler
+	stop()
+	log.Info("Shutdown signal received. Starting graceful shutdown...")
+
+	// Drain API Server
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	apiServer.Stop(shutdownCtx)
+
+	log.Info("Application shutdown gracefully...")
 }

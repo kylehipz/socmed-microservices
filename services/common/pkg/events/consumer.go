@@ -3,6 +3,5 @@ package events
 import "context"
 
 type Consumer interface {
-	Start(context.Context)
-	Stop(context.Context)
+	Start(context.Context) error
 }

@@ -21,8 +21,7 @@ func NewEchoServer(log *zap.Logger, db *gorm.DB, publisher *events.Publisher) *e
 	jwtMiddleware := middlewares.JWTAuth(config.JwtSecret)
 
 	e.Use(loggerMiddleware)
-	authenticatedRoutes := e.Group("")
-	authenticatedRoutes.Use(jwtMiddleware)
+	authenticatedRoutes := e.Group("", jwtMiddleware)
 
 	// Routes
 	authenticatedRoutes.GET("/", userHandler.ListUsers)

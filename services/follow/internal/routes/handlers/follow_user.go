@@ -3,11 +3,15 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/kylehipz/socmed-microservices/common/pkg/logger"
 	"github.com/kylehipz/socmed-microservices/follow/internal/utils"
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 )
 
 func (f *FollowHandler) FollowUser(c echo.Context) error {
+	log := logger.FromContext(c.Request().Context())
+
 	followerVal := c.Get("user_id")
 	followeeStr := c.Param("id")
 
@@ -18,7 +22,9 @@ func (f *FollowHandler) FollowUser(c echo.Context) error {
 	}
 
 	if err := f.db.Create(follow).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, ErrorResponse{Message: "Internal server error"})
+		errorMessage := "Internal server error"
+		log.Error(errorMessage, zap.Error(err))
+		return c.JSON(http.StatusInternalServerError, ErrorResponse{Message: errorMessage})
 	}
 
 	return c.JSON(http.StatusCreated, *follow)

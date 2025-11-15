@@ -40,10 +40,11 @@ func (u *UserHandler) RegisterUser(c echo.Context) error {
 	user.StripPassword()
 	log.Debug("Password stripped")
 
+	log_event_field := zap.String("event_name", events.UserCreated)
 	if err := u.publisher.PublishEvent(events.UserCreated, user); err != nil {
-		log.With(zap.String("event_name", events.UserCreated)).Error("Failed to publish event")
+		log.Error("Failed to publish event", log_event_field, zap.Error(err))
 	} else {
-		log.With(zap.String("event_name", events.UserCreated)).Debug("Event published successfully")
+		log.Debug("Event published successfully", log_event_field)
 	}
 
 	return c.JSON(http.StatusCreated, echo.Map{"id": user.ID})

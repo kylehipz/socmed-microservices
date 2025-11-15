@@ -140,7 +140,9 @@ func (a *ApiServer) startConsumers(ctx context.Context) {
 	for _, c := range a.consumers {
 		go func(consumer events.Consumer) {
 			defer a.wg.Done()
-			consumer.Start(ctx)
+			if err := consumer.Start(ctx); err != nil {
+				a.consumerCancel()
+			}
 		}(c)
 	}
 }

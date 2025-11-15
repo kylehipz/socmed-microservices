@@ -16,6 +16,3 @@ var LogLevel = os.Getenv("LOG_LEVEL")
 
 // Service
 var ServiceName = "Users Service"
-
-// Events
-var SocmedExchangeName = "socmed.events"

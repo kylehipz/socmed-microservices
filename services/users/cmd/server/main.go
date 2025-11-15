@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/kylehipz/socmed-microservices/common/pkg/constants"
 	"github.com/kylehipz/socmed-microservices/common/pkg/db"
 	err_utils "github.com/kylehipz/socmed-microservices/common/pkg/errors"
 	"github.com/kylehipz/socmed-microservices/common/pkg/events"
@@ -34,7 +35,7 @@ func main() {
 
 	defer ch.Close()
 
-	publisher := events.NewPublisher(ch, config.SocmedExchangeName)
+	publisher := events.NewPublisher(ch, constants.SocmedExchangeName)
 
 	// init db
 	gormDB, err := db.NewGormDB(log, config.DatabaseUrl)
