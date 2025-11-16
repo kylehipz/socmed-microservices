@@ -15,4 +15,4 @@ var Environment = os.Getenv("ENVIRONMENT")
 var LogLevel = os.Getenv("LOG_LEVEL")
 
 // Service
-var ServiceName = "Users Service"
+var ServiceName = "Posts Service"

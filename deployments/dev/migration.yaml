@@ -30,3 +30,19 @@ services:
           "up"
         ]
       restart: "on-failure"
+
+  posts-migrate:
+      image: migrate/migrate:v4.19.0
+      container_name: posts-migrate
+      depends_on:
+        users-db:
+          condition: service_healthy
+      volumes:
+        - ../../services/posts/migrations:/migrations
+      command:
+        [
+          "-path", "/migrations",
+          "-database", "postgres://postgres:postgres@posts-db:5432/socmed_posts?sslmode=disable",
+          "up"
+        ]
+      restart: "on-failure"

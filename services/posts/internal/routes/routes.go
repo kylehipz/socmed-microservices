@@ -3,8 +3,9 @@ package routes
 import (
 	"github.com/kylehipz/socmed-microservices/common/pkg/events"
 	"github.com/kylehipz/socmed-microservices/common/pkg/middlewares"
-	"github.com/kylehipz/socmed-microservices/follow/config"
-	"github.com/kylehipz/socmed-microservices/follow/internal/routes/handlers"
+	"github.com/kylehipz/socmed-microservices/common/pkg/server"
+	"github.com/kylehipz/socmed-microservices/posts/config"
+	"github.com/kylehipz/socmed-microservices/posts/internal/routes/handlers"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -12,8 +13,10 @@ import (
 
 func NewEchoServer(log *zap.Logger, db *gorm.DB, publisher *events.Publisher) *echo.Echo {
 	e := echo.New()
+	// init handler
+	postHandler := handlers.NewPostHandler(db, publisher)
 
-	followHandler := handlers.NewFollowHandler(db)
+	// middlewares
 	loggerMiddleware := middlewares.RequestLoggerMiddleware(log)
 
 	e.Use(loggerMiddleware)
@@ -21,10 +24,12 @@ func NewEchoServer(log *zap.Logger, db *gorm.DB, publisher *events.Publisher) *e
 	jwtMiddleware := middlewares.JWTAuth(config.JwtSecret)
 	authenticatedRoutes := e.Group("", jwtMiddleware)
 
-	authenticatedRoutes.POST("/:id", followHandler.FollowUser)
-	authenticatedRoutes.DELETE("/:id", followHandler.UnfollowUser)
+	authenticatedRoutes.POST("/", postHandler.CreatePost)
 
-	e.GET("/healthz", followHandler.HealthCheck)
+	authenticatedRoutes.PATCH("/:id", postHandler.UpdatePost)
+	authenticatedRoutes.DELETE("/:id", postHandler.DeletePost)
+
+	e.GET("/healthz", server.HealthCheck)
 
 	return e
 }

@@ -27,3 +27,12 @@ services:
             config:
               replace:
                 uri: /healthz
+
+  - name: posts
+    url: http://posts-service:8080/
+    routes:
+      - name: posts-route
+        strip_path: true
+        paths:
+          - /api/v1/posts
+
