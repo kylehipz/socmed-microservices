@@ -1,0 +1,26 @@
+{
+  "id": "socmed-microservices",
+  "realm": "socmed-microservices",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "kong-client",
+      "name": "Kong Gateway Client",
+      "enabled": true,
+      "publicClient": true,
+      "redirectUris": ["*"],
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true
+    }
+  ],
+  "users": [
+    {
+      "username": "demo",
+      "enabled": true,
+      "email": "demo@example.com",
+      "credentials": [{ "type": "password", "value": "demo" }]
+    }
+  ]
+}

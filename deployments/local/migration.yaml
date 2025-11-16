@@ -1,0 +1,64 @@
+services:
+  users-migrate:
+      image: migrate/migrate:v4.19.0
+      container_name: users-migrate
+      depends_on:
+        users-db:
+          condition: service_healthy
+      volumes:
+        - ../../services/users/migrations:/migrations
+      command:
+        [
+          "-path", "/migrations",
+          "-database", "postgres://postgres:postgres@users-db:5432/socmed_users?sslmode=disable",
+          "up"
+        ]
+      restart: "on-failure"
+
+  follow-migrate:
+      image: migrate/migrate:v4.19.0
+      container_name: follow-migrate
+      depends_on:
+        users-db:
+          condition: service_healthy
+      volumes:
+        - ../../services/follow/migrations:/migrations
+      command:
+        [
+          "-path", "/migrations",
+          "-database", "postgres://postgres:postgres@follow-db:5432/socmed_follow?sslmode=disable",
+          "up"
+        ]
+      restart: "on-failure"
+
+  posts-migrate:
+      image: migrate/migrate:v4.19.0
+      container_name: posts-migrate
+      depends_on:
+        users-db:
+          condition: service_healthy
+      volumes:
+        - ../../services/posts/migrations:/migrations
+      command:
+        [
+          "-path", "/migrations",
+          "-database", "postgres://postgres:postgres@posts-db:5432/socmed_posts?sslmode=disable",
+          "up"
+        ]
+      restart: "on-failure"
+
+  timeline-migrate:
+      image: migrate/migrate:v4.19.0
+      container_name: timeline-migrate
+      depends_on:
+        users-db:
+          condition: service_healthy
+      volumes:
+        - ../../services/timeline/migrations:/migrations
+      command:
+        [
+          "-path", "/migrations",
+          "-database", "postgres://postgres:postgres@timeline-db:5432/socmed_timeline?sslmode=disable",
+          "up"
+        ]
+      restart: "on-failure"
