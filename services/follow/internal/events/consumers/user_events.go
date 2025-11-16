@@ -161,7 +161,7 @@ func (u *UserEventsConsumer) Start(ctx context.Context) error {
 	return nil
 }
 
-func (u *UserEventsConsumer) Wait(ctx context.Context) { 
+func (u *UserEventsConsumer) Wait(ctx context.Context) {
 	u.log.Info("Attempting event consumers graceful shutdown...")
 	// setup consumer shutdown context: 5s
 	workersShutdownCtx, cancel := context.WithTimeout(ctx, 3*time.Second)

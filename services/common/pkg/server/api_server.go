@@ -16,12 +16,12 @@ import (
 )
 
 type ApiServer struct {
-	log            *zap.Logger
-	e              *echo.Echo
-	name           string
-	consumers      []events.Consumer
-	db             *gorm.DB
-	mq             *amqp091.Connection
+	log       *zap.Logger
+	e         *echo.Echo
+	name      string
+	consumers []events.Consumer
+	db        *gorm.DB
+	mq        *amqp091.Connection
 }
 
 func NewApiServer(
@@ -45,7 +45,7 @@ func NewApiServer(
 	}
 }
 
-func (a *ApiServer) Start(ctx context.Context,  port string) error {
+func (a *ApiServer) Start(ctx context.Context, port string) error {
 	// Start consumers
 	if err := a.startConsumers(ctx); err != nil {
 		a.log.Error("Critical consumer failed to start", zap.Error(err))
@@ -140,9 +140,9 @@ func (a *ApiServer) startConsumers(ctx context.Context) error {
 	}
 
 	for _, c := range a.consumers {
-			if err := c.Start(ctx); err != nil {
-				return err
-			}
+		if err := c.Start(ctx); err != nil {
+			return err
+		}
 	}
 
 	return nil

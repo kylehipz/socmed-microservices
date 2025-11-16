@@ -35,7 +35,7 @@ func (f *FollowHandler) FollowUser(c echo.Context) error {
 				log.Error(errorMessage, zap.Error(err))
 				return c.JSON(http.StatusBadRequest, ErrorResponse{Message: errorMessage})
 			}
-		} 
+		}
 		errorMessage := "Internal server error"
 		log.Error(errorMessage, zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{Message: errorMessage})

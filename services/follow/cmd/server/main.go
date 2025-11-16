@@ -12,9 +12,9 @@ import (
 	"github.com/kylehipz/socmed-microservices/common/pkg/events"
 	"github.com/kylehipz/socmed-microservices/common/pkg/logger"
 	"github.com/kylehipz/socmed-microservices/common/pkg/server"
+	"github.com/kylehipz/socmed-microservices/follow/config"
 	"github.com/kylehipz/socmed-microservices/follow/internal/events/consumers"
 	"github.com/kylehipz/socmed-microservices/follow/internal/routes"
-	"github.com/kylehipz/socmed-microservices/follow/config"
 )
 
 func main() {
@@ -70,4 +70,3 @@ func main() {
 
 	log.Info("Application shutdown complete.")
 }
-

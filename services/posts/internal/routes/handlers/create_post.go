@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/kylehipz/socmed-microservices/common/pkg/events"
 	"github.com/kylehipz/socmed-microservices/common/pkg/logger"
 	"github.com/kylehipz/socmed-microservices/posts/internal/models"
 	"github.com/kylehipz/socmed-microservices/posts/internal/types"
@@ -31,6 +32,11 @@ func (p *PostHandler) CreatePost(c echo.Context) error {
 		errorMessage := "Internal server error"
 		log.Error(errorMessage, zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{Message: errorMessage})
+	}
+
+	log_event_field := zap.String("event_name", events.PostCreated)
+	if err := p.publisher.PublishEvent(events.PostCreated, post); err != nil {
+		log.Error("Failed to publish event", log_event_field, zap.Error(err))
 	}
 
 	return c.JSON(http.StatusCreated, post)

@@ -4,9 +4,9 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/kylehipz/socmed-microservices/common/pkg/events"
 	"github.com/kylehipz/socmed-microservices/common/pkg/logger"
 	"github.com/kylehipz/socmed-microservices/posts/internal/models"
-	"github.com/kylehipz/socmed-microservices/posts/internal/types"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -22,8 +22,8 @@ func (p *PostHandler) DeletePost(c echo.Context) error {
 
 	if err := p.db.First(&post, "id = ? AND author_id = ?", id, authorID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-        return c.JSON(http.StatusNotFound, ErrorResponse{Message: "Post not found"})
-    }
+			return c.JSON(http.StatusNotFound, ErrorResponse{Message: "Post not found"})
+		}
 
 		errorMessage := "Internal server error"
 		log.Error(errorMessage, zap.Error(err))
@@ -36,5 +36,10 @@ func (p *PostHandler) DeletePost(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{Message: errorMessage})
 	}
 
-	return c.JSON(http.StatusOK, post)
+	log_event_field := zap.String("event_name", events.PostDeleted)
+	if err := p.publisher.PublishEvent(events.PostDeleted, echo.Map{"id": id}); err != nil {
+		log.Error("Failed to publish event", log_event_field, zap.Error(err))
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{"id": id})
 }
