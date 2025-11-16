@@ -3,6 +3,7 @@ package consumers
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/kylehipz/socmed-microservices/common/pkg/constants"
 	"github.com/kylehipz/socmed-microservices/common/pkg/events"
@@ -160,6 +161,24 @@ func (u *UserEventsConsumer) Start(ctx context.Context) error {
 	return nil
 }
 
-func (u *UserEventsConsumer) Stop() { 
-	u.wg.Wait()
+func (u *UserEventsConsumer) Wait(ctx context.Context) { 
+	u.log.Info("Attempting event consumers graceful shutdown...")
+	// setup consumer shutdown context: 5s
+	workersShutdownCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	// wait for all workers to be done
+	waitWorkersChan := make(chan struct{})
+
+	go func() {
+		defer close(waitWorkersChan)
+		u.wg.Wait()
+	}()
+
+	select {
+	case <-waitWorkersChan:
+		u.log.Info("All workers shutdown successfully")
+	case <-workersShutdownCtx.Done():
+		u.log.Info("Workers shutdown timed out. Shutdown forced")
+	}
 }

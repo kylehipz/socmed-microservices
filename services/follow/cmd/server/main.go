@@ -12,26 +12,22 @@ import (
 	"github.com/kylehipz/socmed-microservices/common/pkg/events"
 	"github.com/kylehipz/socmed-microservices/common/pkg/logger"
 	"github.com/kylehipz/socmed-microservices/common/pkg/server"
-	"github.com/kylehipz/socmed-microservices/follow/config"
 	"github.com/kylehipz/socmed-microservices/follow/internal/events/consumers"
 	"github.com/kylehipz/socmed-microservices/follow/internal/routes"
+	"github.com/kylehipz/socmed-microservices/follow/config"
 )
 
 func main() {
 	// init logger
-	log := logger.NewLogger(config.Environment, config.LogLevel)
+	log := logger.NewLogger(config.ServiceName, config.Environment, config.LogLevel)
 
-	mainCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
-
+	rootCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	// init rabbitmq
 	rabbitMqConn, err := events.NewRabbitMQConn(log, config.RabbitMqUrl)
 	err_utils.HandleFatalError(log, err)
 
 	ch, err := rabbitMqConn.Channel()
 	err_utils.HandleFatalError(log, err)
-
-	defer ch.Close()
 
 	publisher := events.NewPublisher(ch, constants.SocmedExchangeName)
 
@@ -54,19 +50,24 @@ func main() {
 		rabbitMqConn,
 	)
 
-	go apiServer.Start(mainCtx, stop, config.HttpPort)
+	go func() {
+		if err := apiServer.Start(rootCtx, config.HttpPort); err != nil {
+			stop()
+		}
+	}()
 
 	// Wait for shutdown signal
-	<-mainCtx.Done()
+	<-rootCtx.Done()
 
 	// Call stop to remove the signal handler
 	stop()
 	log.Info("Shutdown signal received. Starting graceful shutdown...")
 
 	// Drain API Server
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	rootShutdownCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	apiServer.Stop(shutdownCtx)
+	apiServer.Wait(rootShutdownCtx)
 
-	log.Info("Application shutdown gracefully...")
+	log.Info("Application shutdown complete.")
 }
+

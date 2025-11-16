@@ -13,7 +13,7 @@ type contextKey string
 
 const loggerKey = contextKey("logger")
 
-func NewLogger(env string, logLevel string) *zap.Logger {
+func NewLogger(service string, env string, logLevel string) *zap.Logger {
 	var cfg zap.Config
 
 	// Pick base config (dev has pretty console logs, prod has JSON logs)
@@ -35,7 +35,7 @@ func NewLogger(env string, logLevel string) *zap.Logger {
 
 	logger, _ := cfg.Build()
 
-	return logger
+	return logger.With(zap.String("service_name", service))
 }
 
 func resolveLogLevel(env string, override string) zapcore.Level {

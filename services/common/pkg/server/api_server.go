@@ -22,8 +22,6 @@ type ApiServer struct {
 	consumers      []events.Consumer
 	db             *gorm.DB
 	mq             *amqp091.Connection
-	wg             sync.WaitGroup
-	appCancel context.CancelFunc
 }
 
 func NewApiServer(
@@ -47,25 +45,45 @@ func NewApiServer(
 	}
 }
 
-func (a *ApiServer) Start(ctx context.Context, appCancel context.CancelFunc, port string) {
-	a.appCancel = appCancel
+func (a *ApiServer) Start(ctx context.Context,  port string) error {
 	// Start consumers
-	a.startConsumers(ctx)
+	if err := a.startConsumers(ctx); err != nil {
+		a.log.Error("Critical consumer failed to start", zap.Error(err))
+		return err
+	}
 
 	// Start API Server
-  a.startHttpServer(port)
+	if err := a.startHttpServer(port); err != nil {
+		a.log.Error("Http server failed to start", zap.Error(err))
+		return err
+	}
+
+	return nil
 }
 
-func (a *ApiServer) Stop(ctx context.Context) {
+func (a *ApiServer) Wait(ctx context.Context) {
 	a.log.Info("App shutting down...")
-	a.stopConsumers()
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	// drain all consumers
+	go func() {
+		defer wg.Done()
+		a.stopConsumers(ctx)
+	}()
 
 	// drain http requests
-	a.stopHttpServer(ctx)
+	go func() {
+		defer wg.Done()
+		a.stopHttpServer(ctx)
+	}()
+
+	wg.Wait()
 
 	// close all connections
 	a.closeConnections()
-	a.log.Info("Application shutdown complete")
+	a.log.Info("API server shutdown complete")
 }
 
 func (a *ApiServer) startHttpServer(port string) error {
@@ -76,34 +94,21 @@ func (a *ApiServer) startHttpServer(port string) error {
 
 	a.log.Info(fmt.Sprintf("%s started on port %s", a.name, port))
 	if err := a.e.Start(portStr); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		a.appCancel()
+		return err
 	}
 
 	return nil
 }
 
 func (a *ApiServer) stopHttpServer(ctx context.Context) {
-	shutdownCtx, cancel := context.WithTimeout(ctx, 8*time.Second)
+	a.log.Info("Attempting HTTP server graceful shutdown...")
+	httpServerShutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	if err := a.e.Shutdown(shutdownCtx); err != nil {
+	if err := a.e.Shutdown(httpServerShutdownCtx); err != nil {
 		a.log.Error("HTTP server shutdown error", zap.Error(err))
 	} else {
-		a.log.Info("HTTP server shut down gracefully")
-	}
-
-	waitChan := make(chan struct{})
-	go func() {
-		defer close(waitChan)
-		// wait all consumers to be done
-		a.wg.Wait()
-	}()
-
-	select {
-	case <-waitChan:
-		a.log.Info("All consumers stopped gracefully")
-	case <-ctx.Done():
-		a.log.Info("Consumers timed out, proceeding with shutdown")
+		a.log.Info("HTTP server shutdown successfully")
 	}
 }
 
@@ -127,20 +132,51 @@ func (a *ApiServer) closeConnections() {
 	}
 }
 
-func (a *ApiServer) startConsumers(ctx context.Context) {
-	a.wg.Add(len(a.consumers))
-	for _, c := range a.consumers {
-		go func(consumer events.Consumer) {
-			defer a.wg.Done()
-			if err := consumer.Start(ctx); err != nil {
-				a.appCancel()
-			}
-		}(c)
+func (a *ApiServer) startConsumers(ctx context.Context) error {
+	consumerCount := len(a.consumers)
+
+	if consumerCount == 0 {
+		a.log.Warn("No registered consumers")
 	}
+
+	for _, c := range a.consumers {
+			if err := c.Start(ctx); err != nil {
+				return err
+			}
+	}
+
+	return nil
 }
 
-func (a *ApiServer) stopConsumers() {
+func (a *ApiServer) stopConsumers(ctx context.Context) {
+	a.log.Info("Attempting event consumers graceful shutdown...")
+	// setup consumer shutdown context: 5s
+	consumersShutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	// wait
+	var wg sync.WaitGroup
+	wg.Add(len(a.consumers))
+
 	for _, consumer := range a.consumers {
-		consumer.Stop()
+		go func(c events.Consumer) {
+			defer wg.Done()
+			c.Wait(consumersShutdownCtx)
+		}(consumer)
+	}
+
+	// wait for all consumers to be done
+	waitConsumersChan := make(chan struct{})
+
+	go func() {
+		defer close(waitConsumersChan)
+		wg.Wait()
+	}()
+
+	select {
+	case <-waitConsumersChan:
+		a.log.Info("Consumers shutdown successfully")
+	case <-consumersShutdownCtx.Done():
+		a.log.Info("Consumers shutdown timed out. Shutdown forced")
 	}
 }
