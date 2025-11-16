@@ -17,18 +17,8 @@ type Follow struct {
 	Followee *User `gorm:"foreignKey:FolloweeID;references:ID" json:"followee,omitempty"`
 }
 
-type FollowResponse struct {
-	Follower *User `json:"follower"`
-	Followee *User `json:"followee"`
-}
-
 func (Follow) TableName() string {
-	return "follow.follow"
+	return "timeline.follow"
 }
 
-func (f *Follow) ToFollowResponse() *FollowResponse {
-	return &FollowResponse{
-		Follower: f.Follower,
-		Followee: f.Followee,
-	}
-}
+

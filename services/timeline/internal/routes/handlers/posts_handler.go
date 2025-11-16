@@ -5,13 +5,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type FollowHandler struct {
-	db *gorm.DB
+type PostHandler struct {
+	db        *gorm.DB
 	publisher *events.Publisher
 }
 
-func NewFollowHandler(db *gorm.DB, publisher *events.Publisher) *FollowHandler {
-	return &FollowHandler{db: db, publisher: publisher}
+func NewPostHandler(db *gorm.DB, publisher *events.Publisher) *PostHandler {
+	return &PostHandler{db: db, publisher: publisher}
 }
 
 type ErrorResponse struct {

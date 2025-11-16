@@ -46,3 +46,19 @@ services:
           "up"
         ]
       restart: "on-failure"
+
+  timeline-migrate:
+      image: migrate/migrate:v4.19.0
+      container_name: timeline-migrate
+      depends_on:
+        users-db:
+          condition: service_healthy
+      volumes:
+        - ../../services/timeline/migrations:/migrations
+      command:
+        [
+          "-path", "/migrations",
+          "-database", "postgres://postgres:postgres@timeline-db:5432/socmed_timeline?sslmode=disable",
+          "up"
+        ]
+      restart: "on-failure"

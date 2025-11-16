@@ -5,16 +5,14 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/kylehipz/socmed-microservices/common/pkg/constants"
 	"github.com/kylehipz/socmed-microservices/common/pkg/db"
 	err_utils "github.com/kylehipz/socmed-microservices/common/pkg/errors"
 	"github.com/kylehipz/socmed-microservices/common/pkg/events"
 	"github.com/kylehipz/socmed-microservices/common/pkg/logger"
 	"github.com/kylehipz/socmed-microservices/common/pkg/server"
-	"github.com/kylehipz/socmed-microservices/follow/config"
-	"github.com/kylehipz/socmed-microservices/follow/internal/events/consumers"
-	"github.com/kylehipz/socmed-microservices/follow/internal/routes"
+	"github.com/kylehipz/socmed-microservices/timeline/internal/events/consumers"
+	"github.com/kylehipz/socmed-microservices/timeline/config"
+	"github.com/kylehipz/socmed-microservices/timeline/internal/routes"
 )
 
 func main() {
@@ -29,7 +27,6 @@ func main() {
 	ch, err := rabbitMqConn.Channel()
 	err_utils.HandleFatalError(log, err)
 
-	publisher := events.NewPublisher(ch, constants.SocmedExchangeName)
 
 	// init db
 	gormDB, err := db.NewGormDB(log, config.DatabaseUrl)
@@ -37,10 +34,15 @@ func main() {
 
 	// init consumers
 	userEventsConsumer := consumers.NewUserEventsConsumer(log, ch, gormDB, 10)
-	eventConsumers := []events.Consumer{userEventsConsumer}
+	followEventsConsumer := consumers.NewFollowEventsConsumer(log, ch, gormDB, 10)
+	postEventsConsumer := consumers.NewPostEventsConsumer(log, ch, gormDB, 10)
+
+	eventConsumers := []events.Consumer{
+		userEventsConsumer, followEventsConsumer, postEventsConsumer,
+	}
 
 	// init echo and API Server
-	e := routes.NewEchoServer(log, gormDB, publisher)
+	e := routes.NewEchoServer(log, gormDB)
 	apiServer := server.NewApiServer(
 		log,
 		e,

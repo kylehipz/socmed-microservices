@@ -36,3 +36,11 @@ services:
         paths:
           - /api/v1/posts
 
+  - name: timeline
+    url: http://timeline-service:8080/
+    routes:
+      - name: timeline-route
+        strip_path: true
+        paths:
+          - /api/v1/timeline
+

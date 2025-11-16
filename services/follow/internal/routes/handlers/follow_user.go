@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/kylehipz/socmed-microservices/common/pkg/events"
 	"github.com/kylehipz/socmed-microservices/common/pkg/logger"
 	"github.com/kylehipz/socmed-microservices/follow/internal/models"
 	"github.com/kylehipz/socmed-microservices/follow/internal/utils"
@@ -49,6 +50,12 @@ func (f *FollowHandler) FollowUser(c echo.Context) error {
 		log.Error("Load follow associations failed", zap.Error(err))
 		return c.JSON(http.StatusInternalServerError, ErrorResponse{Message: "Internal server error"})
 	}
+
+	log_event_field := zap.String("event_name", events.UserFollowed)
+	if err := f.publisher.PublishEvent(events.UserFollowed, follow); err != nil {
+		log.Error("Failed to publish event", log_event_field, zap.Error(err))
+	}
+
 
 	return c.JSON(http.StatusCreated, result.ToFollowResponse())
 }

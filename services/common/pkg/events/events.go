@@ -10,3 +10,8 @@ var AllPostEvents = "post.*"
 var PostCreated = "post.created"
 var PostUpdated = "post.updated"
 var PostDeleted = "post.deleted"
+
+// Follow
+var AllFollowEvents = "follow.*"
+var UserFollowed = "follow.followed"
+var UserUnfollowed = "follow.unfollowed"

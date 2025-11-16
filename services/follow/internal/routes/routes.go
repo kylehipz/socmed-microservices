@@ -13,7 +13,7 @@ import (
 func NewEchoServer(log *zap.Logger, db *gorm.DB, publisher *events.Publisher) *echo.Echo {
 	e := echo.New()
 
-	followHandler := handlers.NewFollowHandler(db)
+	followHandler := handlers.NewFollowHandler(db, publisher)
 	loggerMiddleware := middlewares.RequestLoggerMiddleware(log)
 
 	e.Use(loggerMiddleware)
