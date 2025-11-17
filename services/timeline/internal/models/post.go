@@ -23,3 +23,11 @@ type Post struct {
 func (Post) TableName() string {
 	return "timeline.posts"
 }
+
+type PostWithAuthor struct {
+	Post
+	UserName string `gorm:"type:text;not null" json:"userName"`
+	FirstName string `gorm:"type:text;not null" json:"firstName"`
+	LastName string `gorm:"type:text;not null" json:"lastName"`
+}
+

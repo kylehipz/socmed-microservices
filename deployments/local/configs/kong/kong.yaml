@@ -2,31 +2,13 @@ _format_version: "3.0"
 _transform: true
 
 services:
-  - name: users
-    url: http://users-service:8080/
-    routes:
-      - name: users-route
-        strip_path: true
-        paths:
-          - /api/v1/users
-
   - name: follow
     url: http://follow-service:8080/
     routes:
       - name: follow-route
         strip_path: true
         paths:
-          - /api/v1/users/me/following
-
-      - name: follow-healthz-route
-        paths:
-          - /api/v1/follow/healthz
-        strip_path: false
-        plugins:
-          - name: request-transformer
-            config:
-              replace:
-                uri: /healthz
+          - /api/v1/follow
 
   - name: posts
     url: http://posts-service:8080/
@@ -43,4 +25,13 @@ services:
         strip_path: true
         paths:
           - /api/v1/timeline
+
+  - name: users
+    url: http://users-service:8080/
+    routes:
+      - name: users-route
+        strip_path: true
+        paths:
+          - /api/v1/users
+
 
